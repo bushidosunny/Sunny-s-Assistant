@@ -182,9 +182,9 @@ def upload_history():
     )
     summary = response.choices[0].message.content
     # print chat summary
-    print("\nChat Summary:")
+    print("\nSummary compression:")
     print(summary)
-    print(f'Lenght: {len(summary)}')
+    print(f'Size decrease: {(len(summary))/(len(plain_text))}')
     # update Global instructions of assistant with timestamp
     current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     # extract assistant instructions
