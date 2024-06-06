@@ -5,8 +5,8 @@ import os
 from dotenv import load_dotenv
 from prompts import *
 from utils import *
-from extract_json import extract_json
 from langchain_core.messages import HumanMessage, AIMessage
+
 
 # Load variables
 load_dotenv()
@@ -19,8 +19,8 @@ client = OpenAI(api_key=api_key)
 user_avatar_url = "https://cdn.pixabay.com/photo/2016/12/21/07/36/profession-1922360_1280.png"
 
 specialist_id_caption = {
-  "Diana's assistant": {
-    "assistant_id": "asst_mazfXTK1DICPs7PiPfJxGsZZ",
+  "Sunny's Assistant": {
+    "assistant_id": "asst_IdOC7jNX9BdemhoOZqd0kmZ7",
     "caption": "role is multifaceted, encompassing elements of an assistant, AI journal, therapist, friend, and counselor.",
     "avatar": "https://cdn.pixabay.com/photo/2017/03/31/23/11/robot-2192617_1280.png"
   },
@@ -54,7 +54,7 @@ def initialize_session_state():
 # Setup the main page display and header
 def display_header():
     st.set_page_config(page_title="DA", page_icon="🫡")
-    st.header("Diana's Assistant 🤖")
+    st.header("Optimus Prime 🤖")
 
 # User input container
 def handle_user_input_container():
