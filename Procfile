@@ -1,1 +1,1 @@
-web: sh setup.sh && streamlit run app_ddx.py
+web: sh setup.sh && streamlit run life_ddx.py
