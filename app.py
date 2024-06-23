@@ -22,7 +22,7 @@ specialist_id_caption = {
   "Sunny's Assistant": {
     "assistant_id": "asst_IdOC7jNX9BdemhoOZqd0kmZ7",
     "caption": "role is multifaceted, encompassing elements of an assistant, AI journal, therapist, friend, and counselor.",
-    "avatar": "https://www.shareicon.net/data/256x256/2016/01/06/234337_optimus_256x256.png"
+    "avatar": "https://https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/0bd3c9c5-6f0d-4014-8eff-39e44d46eabb/depcapq-fb1672b3-f968-4be8-9943-d5284cdb2750.png/v1/fill/w_827,h_966/optimus_prime_head_by_drawinrook_depcapq-pre.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MTQ5NSIsInBhdGgiOiJcL2ZcLzBiZDNjOWM1LTZmMGQtNDAxNC04ZWZmLTM5ZTQ0ZDQ2ZWFiYlwvZGVwY2FwcS1mYjE2NzJiMy1mOTY4LTRiZTgtOTk0My1kNTI4NGNkYjI3NTAucG5nIiwid2lkdGgiOiI8PTEyODAifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.dxxbGEB0k4WlyPz7uP3FBGwwdc7_t7HiyRXdEjRnChY"
   },
   "Mindfulness Teacher": {
     "assistant_id": "asst_bnFm27eqedaYK9Ulekh8Yjd9",
