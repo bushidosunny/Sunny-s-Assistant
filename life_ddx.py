@@ -19,7 +19,7 @@ client = OpenAI(api_key=api_key)
 user_avatar_url = "https://api.dicebear.com/8.x/pixel-art/svg?seed=Jasmine&beardProbability=0&clothing=variant01&clothingColor=ffd969&eyesColor=876658&glassesColor=191919,323232&hair=short04&hairColor=28150a&skinColor=b68655"
 
 specialist_id_caption = {
-  "Sunny's Assistant": {
+  "Optimus Prime": {
     "assistant_id": "asst_IdOC7jNX9BdemhoOZqd0kmZ7",
     "caption": "role is multifaceted, encompassing elements of an assistant, AI journal, therapist, friend, and counselor.",
     "avatar": "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/0bd3c9c5-6f0d-4014-8eff-39e44d46eabb/depcapq-fb1672b3-f968-4be8-9943-d5284cdb2750.png/v1/fill/w_827,h_966/optimus_prime_head_by_drawinrook_depcapq-pre.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MTQ5NSIsInBhdGgiOiJcL2ZcLzBiZDNjOWM1LTZmMGQtNDAxNC04ZWZmLTM5ZTQ0ZDQ2ZWFiYlwvZGVwY2FwcS1mYjE2NzJiMy1mOTY4LTRiZTgtOTk0My1kNTI4NGNkYjI3NTAucG5nIiwid2lkdGgiOiI8PTEyODAifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.dxxbGEB0k4WlyPz7uP3FBGwwdc7_t7HiyRXdEjRnChY"
@@ -31,7 +31,7 @@ specialist_id_caption = {
   },
   "Universal DDX Explorer": {
     "assistant_id": "asst_CFjyIpJwzSpIi1iQmtjduHtU",
-    "caption": "brain",
+    "caption": "Decision helper by clarifying multple outcomes",
     "avatar": "https://cdn.pixabay.com/photo/2013/07/12/19/30/enlightenment-154910_1280.png"
   }
 }
@@ -251,12 +251,12 @@ def display_functions_tab():
 # Process the buttons
 def process_buttons(button1, button2):
     if button1:
-        specialist = "Sunny's Assistant"
+        specialist = "Optimus Prime"
         prompt = "test 1"
         st.session_state["specialist"] = specialist
         button_input(specialist, prompt)
     if button2:
-        specialist = "Sunny's Assistant"
+        specialist = "Optimus Prime"
         prompt = "test 2"
         st.session_state["specialist"] = specialist
         button_input(specialist, prompt)
