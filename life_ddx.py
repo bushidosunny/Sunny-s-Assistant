@@ -58,7 +58,7 @@ def initialize_session_state():
             st.session_state[key] = default
 
 def display_header():
-    st.set_page_config(page_title="OP", page_icon="🤖")
+    st.set_page_config(page_title="OP", page_icon="🤖", initial_sidebar_state="collapsed")
     specialist = st.session_state.specialist
     specialist_avatar = specialist_id_caption[st.session_state.specialist]["avatar"]
     st.markdown(
