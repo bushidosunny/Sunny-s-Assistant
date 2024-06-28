@@ -116,12 +116,14 @@ def display_chat_history():
             with st.chat_message("user", avatar=user_avatar_url):                
                 st.markdown(message.content, unsafe_allow_html=True)
         else:
-            avatar_url = st.session_state.specialist_avatar
+            avatar_url = message.avatar
             with st.chat_message("AI", avatar=avatar_url):
                 st.markdown(message.content, unsafe_allow_html=True)
 
 
 def user_input():
+    
+    specialist_avatar = specialist_id_caption[st.session_state.specialist]["avatar"]
     input_container = st.container()
     input_container.float(float_css_helper(bottom="50px"))
     with input_container:
@@ -138,7 +140,7 @@ def user_input():
         with st.chat_message("user", avatar=user_avatar_url):
             st.markdown(user_question)
         
-        with st.chat_message("AI", avatar=st.session_state.specialist_avatar):
+        with st.chat_message("AI", avatar=specialist_avatar):
             ai_response = get_response(user_question)
             assistant_response = ai_response
         
@@ -146,8 +148,19 @@ def user_input():
     
 
 def upload_history():
-    
-    # pull thread necessary?
+    chat = ''
+    for index, message in enumerate(st.session_state.chat_history, start=1):
+        if isinstance(message, dict) and 'content' in message:
+            content = message['content']
+        elif hasattr(message, 'content'):
+            content = message.content
+        else:
+            content = str(message)
+        
+        prefix = 'User: ' if index % 2 != 0 else 'Assistant: '
+        chat += f"{prefix}{content}\n"
+
+    print(f"DEBUG chat_history:\n{chat}")
     #thread = client.beta.threads.retrieve(st.session_state.thread_id)
     # extract chat_history from thread
     all_messages = []
@@ -190,7 +203,7 @@ def upload_history():
         messages=[
             {
                 "role": "user",
-                "content": summary_prompt + plain_text,
+                "content": summary_prompt + chat,
             }
         ],
         model="gpt-3.5-turbo",
