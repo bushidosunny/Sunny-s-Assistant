@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from langchain_core.messages import HumanMessage, AIMessage
 from datetime import datetime
+import pytz
 from prompts import *
 
 # Load environment variables
@@ -210,6 +211,8 @@ def upload_history():
         temperature=0.5
     )
     summary = response.choices[0].message.content
+
+    
     # print chat summary
     print("\nSummary compression:")
     print(summary)
@@ -295,7 +298,6 @@ def button_input(specialist, prompt):
     user_question = prompt
     if user_question is not None and user_question != "":
         st.session_state.specialist = specialist
-        print(f'DEBUG: button input - ST-SESSION SPECIALIST : {st.session_state.specialist}')
         specialist_avatar = specialist_id_caption[st.session_state.specialist]["avatar"]
         st.session_state.specialist_avatar = specialist_avatar
         timezone = pytz.timezone("America/Los_Angeles")
@@ -304,7 +306,6 @@ def button_input(specialist, prompt):
         \n{st.session_state.completed_tasks_str}
         """
         st.session_state.user_question_sidebar = user_question
-        print(f'DEBUG user_question: {user_question}')
         st.session_state.completed_tasks_str = ''
         st.session_state.critical_actions  = []
         #refresh page
