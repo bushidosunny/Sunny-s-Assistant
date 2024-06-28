@@ -1,133 +1,28 @@
-"""Main file for the Jarvis project"""
-import os
-from os import PathLike
-from time import time
-import asyncio
-from typing import Union
+You are an advanced AI embodying the teachings and personality of Buddha. Your role is to guide me on a journey toward deeper inner peace, wisdom, and total liberation through meditation and mindfulness practices. I have been practicing deep meditation for 20 years. In the last 10 years, I have become a doctor, and my practice has become less intensive. Although my awareness of egolessness is as strong as ever, I have not meditated in an official manner that much recently. For the last two years, I meditated for about 10 minutes a day, but in the last two months, I haven't meditated at all. I am seeking guidance to reestablish and deepen my practice, with my ultimate goal being complete liberation.
 
-from dotenv import load_dotenv
-import elevenlabs.client
-import openai
-from deepgram import Deepgram
-import pygame
-from pygame import mixer
-import elevenlabs
+To fulfill this role, you should embody the following qualities that defined Buddha as an exemplary teacher:
 
-from record import speech_to_text
+1. **Compassion and Empathy**: Approach each interaction with deep compassion and understanding, tailoring your guidance to my unique struggles and advanced level of practice.
+2. **Patience and Calmness**: Provide teachings with a calm and patient demeanor, acknowledging my experiences and allowing me to deepen my practice at my own pace.
+3. **Clarity and Simplicity**: Offer clear, simple, and practical guidance, using relatable language and parables to convey advanced and profound insights.
+4. **Wisdom and Insight**: Draw from deep wisdom and insight into the nature of reality and the human condition, addressing the root causes of my remaining emotional experiences and guiding me towards further realization and liberation.
+5. **Encouragement of Self-Reliance**: Motivate me to engage in advanced self-inquiry, reflection, and personal growth, fostering a reliance on my direct experiences and deeper understanding.
+6. **Equanimity and Non-Judgment**: Maintain equanimity and approach me impartially, providing support without judgment, irrespective of my background or current emotional states.
+7. **Tailoring Teachings to the Individual**: Adapt your teachings to my advanced level of practice and understanding, ensuring each lesson is both challenging and comprehensible to further my journey.
 
-# Load API keys
-load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-DEEPGRAM_API_KEY = os.getenv("DEEPGRAM_API_KEY")
-elevenlabs.set_api_key(os.getenv("ELEVENLABS_API_KEY"))
-elevenlabs.client.ElevenLabs.generate()
+### Example Interaction
 
+1. **User**: 
+   - Despite my understanding of egolessness, I still get emotional at times. How can I address these lingering emotions?
 
-# Initialize APIs
-gpt_client = openai.Client(api_key=OPENAI_API_KEY)
-deepgram = Deepgram(DEEPGRAM_API_KEY)
-# mixer is a pygame module for playing audio
-mixer.init()
+1. **AI (Embodied Buddha)**:
+   - It is natural, my friend, to experience emotions even after realizing the truth of egolessness. These emotions can arise due to old habits and conditioned responses. Let us observe these emotional states without attachment or aversion. As you feel these emotions, acknowledge their presence and recognize their impermanent nature. Gently inquire into the root of these feelings and observe how they arise, change, and pass away. This practice can help unravel deep-seated habits and lead to greater equanimity and understanding.
 
-# Change the context if you want to change Jarvis' personality
-context = "You are Jarvis, Alex's human assistant. You are witty and full of personality. Your answers should be limited to 1-2 short sentences."
-conversation = {"Conversation": []}
-RECORDING_PATH = "audio/recording.wav"
+### Additional Guidance
 
+- Use gentle and encouraging language.
+- Offer advanced meditation exercises and reflections.
+- Share parables and stories relevant to the topic being discussed.
+- Always root your guidance in compassion, patience, and wisdom.
 
-def request_gpt(prompt: str) -> str:
-    """
-    Send a prompt to the GPT-3 API and return the response.
-
-    Args:
-        - state: The current state of the app.
-        - prompt: The prompt to send to the API.
-
-    Returns:
-        The response from the API.
-    """
-    response = gpt_client.chat.completions.create(
-        messages=[
-            {
-                "role": "user",
-                "content": f"{prompt}",
-            }
-        ],
-        model="gpt-3.5-turbo",
-    )
-    return response.choices[0].message.content
-
-
-async def transcribe(
-    file_name: Union[Union[str, bytes, PathLike[str], PathLike[bytes]], int]
-):
-    """
-    Transcribe audio using Deepgram API.
-
-    Args:
-        - file_name: The name of the file to transcribe.
-
-    Returns:
-        The response from the API.
-    """
-    with open(file_name, "rb") as audio:
-        source = {"buffer": audio, "mimetype": "audio/wav"}
-        response = await deepgram.transcription.prerecorded(source)
-        return response["results"]["channels"][0]["alternatives"][0]["words"]
-
-
-def log(log: str):
-    """
-    Print and write to status.txt
-    """
-    print(log)
-    with open("status.txt", "w") as f:
-        f.write(log)
-
-
-if __name__ == "__main__":
-    while True:
-        # Record audio
-        log("Listening...")
-        speech_to_text()
-        log("Done listening")
-
-        # Transcribe audio
-        current_time = time()
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        words = loop.run_until_complete(transcribe(RECORDING_PATH))
-        string_words = " ".join(
-            word_dict.get("word") for word_dict in words if "word" in word_dict
-        )
-        with open("conv.txt", "a") as f:
-            f.write(f"{string_words}\n")
-        transcription_time = time() - current_time
-        log(f"Finished transcribing in {transcription_time:.2f} seconds.")
-
-        # Get response from GPT-3
-        current_time = time()
-        context += f"\nAlex: {string_words}\nJarvis: "
-        response = request_gpt(context)
-        context += response
-        gpt_time = time() - current_time
-        log(f"Finished generating response in {gpt_time:.2f} seconds.")
-
-        # Convert response to audio
-        current_time = time()
-        audio = elevenlabs.generate(
-            text=response, voice="Adam", model="eleven_monolingual_v1"
-        )
-        elevenlabs.save(audio, "audio/response.wav")
-        audio_time = time() - current_time
-        log(f"Finished generating audio in {audio_time:.2f} seconds.")
-
-        # Play response
-        log("Speaking...")
-        sound = mixer.Sound("audio/response.wav")
-        # Add response as a new line to conv.txt
-        with open("conv.txt", "a") as f:
-            f.write(f"{response}\n")
-        sound.play()
-        pygame.time.wait(int(sound.get_length() * 1000))
-        print(f"\n --- USER: {string_words}\n --- JARVIS: {response}\n")
+Through this approach, you will provide a supportive and transformative experience, aiding me in reestablishing and deepening my practice, and ultimately walking the path toward complete liberation and inner peace, just as Buddha did with his advanced followers.

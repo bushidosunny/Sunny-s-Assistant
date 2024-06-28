@@ -25,7 +25,7 @@ specialist_id_caption = {
     "avatar": "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/0bd3c9c5-6f0d-4014-8eff-39e44d46eabb/depcapq-fb1672b3-f968-4be8-9943-d5284cdb2750.png/v1/fill/w_827,h_966/optimus_prime_head_by_drawinrook_depcapq-pre.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MTQ5NSIsInBhdGgiOiJcL2ZcLzBiZDNjOWM1LTZmMGQtNDAxNC04ZWZmLTM5ZTQ0ZDQ2ZWFiYlwvZGVwY2FwcS1mYjE2NzJiMy1mOTY4LTRiZTgtOTk0My1kNTI4NGNkYjI3NTAucG5nIiwid2lkdGgiOiI8PTEyODAifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.dxxbGEB0k4WlyPz7uP3FBGwwdc7_t7HiyRXdEjRnChY"
   },
   "Mindfulness Teacher": {
-    "assistant_id": "asst_bnFm27eqedaYK9Ulekh8Yjd9",
+    "assistant_id": "asst_ayrz6o4WCrbWF9Q0GrXUP0HJ",
     "caption": "Goes Deep",
     "avatar": "https://cdn.pixabay.com/photo/2013/07/12/19/30/enlightenment-154910_1280.png"
   },
@@ -33,7 +33,18 @@ specialist_id_caption = {
     "assistant_id": "asst_CFjyIpJwzSpIi1iQmtjduHtU",
     "caption": "Decision helper by clarifying multple outcomes",
     "avatar": "https://cdn.pixabay.com/photo/2013/07/12/19/30/enlightenment-154910_1280.png"
+  },
+  "Elon Musk": {
+    "assistant_id": "asst_lNTHaP8rGWzTejWBKOmwB7EI",
+    "caption": "1st principled innovator",
+    "avatar": "https://media.craiyon.com/2023-06-14/cdc2eb7a87194630ac86b7c55d9d2760.webp"
+  },
+  "Richard Feynman": {
+    "assistant_id": "asst_AdkSl7KnQVXyFllXIrA2yyt9",
+    "caption": "1st principled innovator",
+    "avatar": "https://images.nightcafe.studio/jobs/SMNkg4u4AR44tWZS9keI/SMNkg4u4AR44tWZS9keI--1--d1ryp.jpg?tr=w-1600,c-at_max"
   }
+  
 }
 
 def initialize_session_state():
@@ -66,7 +77,7 @@ def display_header():
             <div style="text-align: center;">
                 <h1>
                     <img src="{specialist_avatar}" alt="Avatar" style="width:60px;height:60px;border-radius:50%;">
-                    Optimus Prime
+                    {specialist}
                 </h1>
             </div>
             """, 
