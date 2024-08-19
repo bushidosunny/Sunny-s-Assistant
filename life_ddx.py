@@ -7,6 +7,7 @@ from langchain_core.messages import HumanMessage, AIMessage
 from datetime import datetime
 import pytz
 from prompts import *
+from recorder import record_audio, transcribe_audio
 
 # Load environment variables
 load_dotenv()
@@ -94,21 +95,26 @@ def generate_response_stream(stream):
 
 
 def get_response(user_question):
-    client.beta.threads.messages.create(thread_id=st.session_state.thread_id, role="user", content=user_question)
+    try:
+        client.beta.threads.messages.create(thread_id=st.session_state.thread_id, role="user", content=user_question)
 
-    response_placeholder = st.empty()  # Placeholder for streaming response text
-    response_text = ""  # To accumulate response text
+        response_placeholder = st.empty()  # Placeholder for streaming response text
+        response_text = ""  # To accumulate response text
 
-    # Stream response from the assistant
-    with client.beta.threads.runs.stream(thread_id=st.session_state.thread_id, assistant_id=st.session_state.assistant_id) as stream:
-        for chunk in stream:
-            if chunk.event == 'thread.message.delta':  # Check if it is the delta message
-                for delta in chunk.data.delta.content:
-                    if delta.type == 'text':
-                        response_text += delta.text.value  # Append new text fragment to response text
-                        response_placeholder.markdown(response_text)  # Update the placeholder with new response text as markdown
+        # Stream response from the assistant
+        with client.beta.threads.runs.stream(thread_id=st.session_state.thread_id, assistant_id=st.session_state.assistant_id) as stream:
+            for chunk in stream:
+                if chunk.event == 'thread.message.delta':  # Check if it is the delta message
+                    for delta in chunk.data.delta.content:
+                        if delta.type == 'text':
+                            response_text += delta.text.value  # Append new text fragment to response text
+                            response_placeholder.markdown(response_text)  # Update the placeholder with new response text as markdown
 
-    return response_text
+        return response_text
+    except Exception as e:
+        print(f"DEBUG: API Error - {str(e)}")
+        st.error("Oops! Something went wrong with the AI. Please try again.")
+    
 
 def display_chat_history():    
     for message in st.session_state.chat_history:
@@ -132,6 +138,7 @@ def user_input():
         with col1:
             user_question = st.chat_input("How may I help you?")
         with col2:
+            user_question = record_audio()
             submit_button = st.button("Upload History")
         if submit_button:
             upload_history()
@@ -302,12 +309,7 @@ def button_input(specialist, prompt):
         st.session_state.specialist_avatar = specialist_avatar
         timezone = pytz.timezone("America/Los_Angeles")
         current_datetime = datetime.now(timezone).strftime("%H:%M:%S")
-        user_question = current_datetime + f"""    \n{user_question}. 
-        \n{st.session_state.completed_tasks_str}
-        """
         st.session_state.user_question_sidebar = user_question
-        st.session_state.completed_tasks_str = ''
-        st.session_state.critical_actions  = []
         #refresh page
         st.rerun()
     st.session_state.button_clicked = False
