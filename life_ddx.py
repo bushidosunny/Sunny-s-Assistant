@@ -1,13 +1,21 @@
 import os
 import streamlit as st
+
 from streamlit_float import float_css_helper
 from dotenv import load_dotenv
 from openai import OpenAI
 from langchain_core.messages import HumanMessage, AIMessage
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 from prompts import *
 from recorder import record_audio, transcribe_audio
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import Flow
+import json
+import oauthlib.oauth2.rfc6749.errors
+
+st.set_page_config(page_title="OP", page_icon="🤖", initial_sidebar_state="collapsed")
 
 # Load environment variables
 load_dotenv()
@@ -71,7 +79,7 @@ def initialize_session_state():
             st.session_state[key] = default
 
 def display_header():
-    st.set_page_config(page_title="OP", page_icon="🤖", initial_sidebar_state="collapsed")
+    
     specialist = st.session_state.specialist
     specialist_avatar = specialist_id_caption[st.session_state.specialist]["avatar"]
     st.markdown(
@@ -143,7 +151,7 @@ def user_input():
         if submit_button:
             upload_history()
             
-    if user_question or user_recording is not None and user_question or user_recording != "":
+    if user_question is not None and user_question != "":
 
         st.session_state.chat_history.append(HumanMessage(user_question, avatar=user_avatar_url))
 
@@ -357,17 +365,113 @@ def choose_specialist_radio():
         # No need to call st.rerun() here
         st.rerun()
 
+# Google Calendar API
+
+def setup_google_calendar():
+    client_secret_json = os.getenv("CLIENT_SECRET_JSON")
+    
+    if not client_secret_json:
+        st.warning("Google Calendar integration is not set up. CLIENT_SECRET_JSON is missing in .env file.")
+        return None
+
+    try:
+        client_config = json.loads(client_secret_json)
+    except json.JSONDecodeError:
+        st.error("Invalid CLIENT_SECRET_JSON format in .env file.")
+        return None
+
+    flow = Flow.from_client_config(
+        client_config,
+        scopes=['https://www.googleapis.com/auth/calendar'],
+        redirect_uri="http://localhost:8501/"
+    )
+    
+    if 'code' not in st.query_params:
+        auth_url, _ = flow.authorization_url(prompt='consent')
+        st.markdown(f"[Click here to authorize]({auth_url})")
+        return None
+    
+    try:
+        flow.fetch_token(code=st.query_params['code'])
+        st.session_state.calendar_credentials = flow.credentials
+        return build('calendar', 'v3', credentials=flow.credentials)
+    except oauthlib.oauth2.rfc6749.errors.InvalidGrantError:
+        st.error("Invalid or expired authorization code. Please try authenticating again.")
+        # Clear the query parameters to allow re-authentication
+        st.experimental_set_query_params()
+        return None
+
+# In your main function:
+if 'calendar_credentials' not in st.session_state:
+    calendar_service = setup_google_calendar()
+    if calendar_service:
+        st.success("Successfully authenticated with Google Calendar!")
+        st.rerun()
+elif 'calendar_credentials' in st.session_state:
+    calendar_service = build('calendar', 'v3', credentials=st.session_state.calendar_credentials)
+else:
+    st.warning("Google Calendar is not authenticated. Please complete the authentication process.")
+
+# In your main function:
+if 'calendar_credentials' not in st.session_state:
+    calendar_service = setup_google_calendar()
+    if calendar_service:
+        st.success("Successfully authenticated with Google Calendar!")
+        st.rerun()
+else:
+    calendar_service = build('calendar', 'v3', credentials=st.session_state.calendar_credentials)
+
+def create_appointment(service, summary, description, start_time, end_time):
+    event = {
+        'summary': summary,
+        'description': description,
+        'start': {
+            'dateTime': start_time.isoformat(),
+            'timeZone': 'America/Los_Angeles',
+        },
+        'end': {
+            'dateTime': end_time.isoformat(),
+            'timeZone': 'America/Los_Angeles',
+        },
+    }
+
+    event = service.events().insert(calendarId='primary', body=event).execute()
+    st.success(f"Event created: {event.get('htmlLink')}")
+
+# Modify your main function to include Google Calendar setup
 def main():
     if "thread_id" not in st.session_state:
         thread = client.beta.threads.create()
         st.session_state.thread_id = thread.id
-        
+    
     initialize_session_state()
     display_header()
     display_chat_history()
     user_input()
     display_sidebar()
     print(st.session_state.thread_id)
+
+    # Set up Google Calendar
+    if 'calendar_credentials' not in st.session_state:
+        calendar_service = setup_google_calendar()
+        if calendar_service:
+            st.success("Successfully authenticated with Google Calendar!")
+            st.rerun()
+    else:
+        calendar_service = build('calendar', 'v3', credentials=st.session_state.calendar_credentials)
+
+    # Example of creating an appointment (you can trigger this based on user input)
+    if calendar_service and st.button("Create Test Appointment"):
+        create_appointment(
+            calendar_service,
+            "Test Appointment",
+            "This is a test appointment created by the app",
+            datetime.now(),
+            datetime.now() + timedelta(hours=1)
+        )
+    elif not calendar_service:
+        st.warning("Google Calendar integration is not available.")
+
 
 
 if __name__ == '__main__':
