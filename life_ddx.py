@@ -138,11 +138,13 @@ def user_input():
         with col1:
             user_question = st.chat_input("How may I help you?")
         with col2:
-            user_question = record_audio()
+            user_recording = record_audio()
             submit_button = st.button("Upload History")
         if submit_button:
             upload_history()
-    if user_question is not None and user_question != "":
+            
+    if user_question or user_recording is not None and user_question or user_recording != "":
+
         st.session_state.chat_history.append(HumanMessage(user_question, avatar=user_avatar_url))
 
         with st.chat_message("user", avatar=user_avatar_url):
@@ -154,6 +156,18 @@ def user_input():
         
         st.session_state.chat_history.append(AIMessage(assistant_response, avatar=st.session_state.specialist_avatar))
     
+    if user_recording is not None and user_recording != "":
+        st.session_state.chat_history.append(HumanMessage(user_recording, avatar=user_avatar_url))
+
+        with st.chat_message("user", avatar=user_avatar_url):
+            st.markdown(user_recording)
+        
+        with st.chat_message("AI", avatar=specialist_avatar):
+            ai_response = get_response(user_recording)
+            assistant_response = ai_response
+        
+        st.session_state.chat_history.append(AIMessage(assistant_response, avatar=st.session_state.specialist_avatar))
+
 
 def upload_history():
     chat = ''
