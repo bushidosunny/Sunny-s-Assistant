@@ -8,14 +8,28 @@ from datetime import datetime
 import pytz
 from prompts import *
 from recorder import record_audio, transcribe_audio
+from ticktick.oauth2 import OAuth2
+from ticktick.api import TickTickClient
+import json
+import traceback
+
+
+
+
 
 # Load environment variables
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    st.error("API Key not found! Please check your environment variables.")
+client_id = os.getenv("TICKTICK_CLIENT_ID")
+client_secret = os.getenv("TICKTICK_CLIENT_SECRET")
+redirect_uri = 'http://localhost:8501'
+username = os.getenv("TICKTICK_USERNAME")
+password = os.getenv("TICKTICK_PASSWORD")
 
 client = OpenAI(api_key=api_key)
+auth_client = OAuth2(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri)
+# ticktick_client = TickTickClient(username, password, auth_client)
+
 
 # Avatar URLs
 user_avatar_url = "https://api.dicebear.com/8.x/pixel-art/svg?seed=Jasmine&beardProbability=0&clothing=variant01&clothingColor=ffd969&eyesColor=876658&glassesColor=191919,323232&hair=short04&hairColor=28150a&skinColor=b68655"
@@ -268,12 +282,7 @@ def display_sidebar():
             
             choose_specialist_radio()
             
-            st.subheader(':orange[Consult Recommnedations]')
-            button1 = st.button("General Reccommendations")
-            button2 = st.button("Diagnosis")
-            button3 = st.button("Treatment Plan")
-            button4 = st.button("Disposition Plan")
-            
+
 
 
             # Ensure choose_specialist_radio is called here with a unique key
@@ -357,6 +366,77 @@ def choose_specialist_radio():
         # No need to call st.rerun() here
         st.rerun()
 
+
+########################## TICKTICK ##########################
+def save_token(token):
+    with open('.ticktick_token', 'w') as f:
+        json.dump(token, f)
+
+def load_token():
+    if os.path.exists('.ticktick_token'):
+        with open('.ticktick_token', 'r') as f:
+            return json.load(f)
+    return None
+
+class StreamlitOAuth2(OAuth2):
+    def get_authorization_url(self):
+        return super().get_authorization_url()
+
+    def get_access_token(self, code):
+        return super().get_access_token(code)
+
+def setup_ticktick():
+    auth_client = StreamlitOAuth2(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri)
+    
+    token = load_token()
+    if not token:
+        auth_url = auth_client.get_authorization_url()
+        st.markdown(f"1. [Click here to authenticate with TickTick]({auth_url})")
+        st.markdown("2. After allowing access, copy the URL you are redirected to.")
+        redirect_url = st.text_input("Paste the redirect URL here:")
+        
+        if redirect_url:
+            try:
+                # Extract the code from the redirect URL
+                code = redirect_url.split('code=')[1].split('&')[0]
+                st.success("Authorization code received. Attempting to get access token...")
+                token = auth_client.get_access_token(code)
+                save_token(token)
+                st.success("Successfully authenticated with TickTick!")
+                st.rerun()  # Rerun the app to update the state
+            except Exception as e:
+                st.error(f"Error getting access token: {str(e)}")
+                st.error(f"Full traceback: {traceback.format_exc()}")
+    
+    if token:
+        try:
+            client = TickTickClient(auth_client, token)
+            # Test the client with a simple API call
+            client.task.get_all()
+            st.success("TickTick client is set up and ready to use!")
+            return client
+        except Exception as e:
+            st.error(f"Error initializing TickTick client: {str(e)}")
+            st.error(f"Full traceback: {traceback.format_exc()}")
+            # If there's an error, we'll clear the token and start over
+            os.remove('.ticktick_token')
+            st.warning("Authentication failed. Please try again.")
+            st.rerun()
+    
+    return None
+
+def reset_ticktick_auth():
+    if os.path.exists('.ticktick_token'):
+        os.remove('.ticktick_token')
+    st.success("TickTick authentication has been reset. Please authenticate again.")
+    st.rerun()
+
+def ticktick_get_all(client):
+    tasks = client.task.get_all()
+    for task in tasks:
+        st.write(f"Task: {task['title']}")
+#####################################################################
+
 def main():
     if "thread_id" not in st.session_state:
         thread = client.beta.threads.create()
@@ -368,7 +448,20 @@ def main():
     user_input()
     display_sidebar()
     print(st.session_state.thread_id)
+    
+    ticktick_client = setup_ticktick()
+    
+    if ticktick_client:
+        ticktick_get_all(ticktick_client)
+    else:
+        st.warning("TickTick client is not set up yet. Please authenticate.")
+    
+    # Add a button to reset TickTick authentication
+    if st.button("Reset TickTick Authentication"):
+        reset_ticktick_auth()
 
+ 
 
+    
 if __name__ == '__main__':
     main()
