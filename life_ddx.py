@@ -143,7 +143,7 @@ def user_input():
         if submit_button:
             upload_history()
             
-    if user_question or user_recording is not None and user_question or user_recording != "":
+    if user_question is not None and user_question != "":
 
         st.session_state.chat_history.append(HumanMessage(user_question, avatar=user_avatar_url))
 
