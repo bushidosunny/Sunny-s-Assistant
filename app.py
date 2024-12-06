@@ -7,6 +7,63 @@ from langchain_core.messages import HumanMessage, AIMessage
 from datetime import datetime
 from prompts import *
 from recorder import record_audio
+import sqlite3
+
+# Initialize database connection
+conn = sqlite3.connect('chat_history.db')
+cursor = conn.cursor()
+def init_db():
+    conn = sqlite3.connect('chat_history.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS chat_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            role TEXT NOT NULL,
+            content TEXT NOT NULL,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    conn.commit()
+    return conn
+
+# Save chat message to database
+def save_message_to_db(role, content):
+    conn = init_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO chat_history (role, content)
+        VALUES (?, ?)
+    ''', (role, content))
+    conn.commit()
+    conn.close()
+
+# Load chat history from database
+def load_chat_history_from_db():
+    conn = init_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT role, content, timestamp FROM chat_history ORDER BY timestamp')
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+# Function to display chat history in the sidebar
+def display_chat_history_sidebar():
+    st.sidebar.title("Chat History")
+    chat_history = load_chat_history_from_db()
+    
+    # Group messages by date
+    grouped_history = {}
+    for role, content, timestamp in chat_history:
+        date = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').date()
+        if date not in grouped_history:
+            grouped_history[date] = []
+        grouped_history[date].append((role, content, timestamp))
+    
+    # Display messages in collapsible sections
+    for date, messages in grouped_history.items():
+        with st.sidebar.expander(f"Chat on {date}"):
+            for role, content, timestamp in messages:
+                st.sidebar.write(f"[{timestamp}] {role}: {content}")
 
 # Load environment variables
 load_dotenv()
@@ -129,6 +186,7 @@ def user_input():
         user_question = text_input if text_input else audio_input
 
     if user_question:
+        save_message_to_db("User", user_question)
         st.session_state.chat_history.append(HumanMessage(user_question, avatar=user_avatar_url))
 
         with st.chat_message("user", avatar=user_avatar_url):
@@ -137,6 +195,7 @@ def user_input():
         with st.chat_message("AI", avatar=st.session_state.specialist_avatar):
             ai_response = get_response(user_question)
             assistant_response = ai_response
+            save_message_to_db("OP", assistant_response)
         
         st.session_state.chat_history.append(AIMessage(assistant_response, avatar=st.session_state.specialist_avatar))
       
@@ -213,6 +272,7 @@ def main():
         
     initialize_session_state()
     display_header()
+    display_chat_history_sidebar()
     display_chat_history()
     user_input()
     print(st.session_state.thread_id)
