@@ -48,6 +48,14 @@ def load_chat_history_from_db():
     conn.close()
     return rows
 
+# Delete chat message from database
+def delete_message(timestamp):
+    conn = init_db()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM chat_history WHERE timestamp = ?', (timestamp,))
+    conn.commit()
+    conn.close()
+
 # Function to display chat history in the sidebar
 def display_chat_history_sidebar():
     st.title("Chat History")
@@ -62,27 +70,25 @@ def display_chat_history_sidebar():
             grouped_history[date] = []
         grouped_history[date].append((role, content, timestamp))
     
-    # Display messages in collapsible sections
+
     for date, messages in grouped_history.items():
         with st.expander(f"Chat on {date}"):
             for role, content, timestamp in messages:
-                if role == "User":
-                    col1, col2 = st.columns([1, 5])
-                    
-                    with col1:
+                col1, col2, col3 = st.columns([1, 5, 1])
+                
+                with col1:
+                    if role == "User":
                         st.image(user_avatar_url, width=20)
-                    
-                    with col2:
-                        st.write(f"{content}")
-
-                else:
-                    col1, col2 = st.columns([1, 5])
-                    
-                    with col1:
+                    else:
                         st.image(specialist_id_caption[role]["avatar"], width=20)
-                    
-                    with col2:
-                        st.write(f"{content}")
+                
+                with col2:
+                    st.write(f"{content}")
+                
+                with col3:
+                    if st.button("🗑️", key=f"delete_{date}_{timestamp}"):
+                        delete_message(date, timestamp)
+                        st.rerun()
 
 # Load environment variables
 load_dotenv()
@@ -129,7 +135,6 @@ def initialize_session_state():
     primary_specialist_id = specialist_id_caption[primary_specialist]["assistant_id"]
     primary_specialist_avatar = specialist_id_caption[primary_specialist]["avatar"]
     state_keys_defaults = {
-        "chat_history": [],
         "user_question": "",
         "json_data": {},
         "critical_actions": {},
@@ -144,6 +149,8 @@ def initialize_session_state():
     for key, default in state_keys_defaults.items():
         if key not in st.session_state:
             st.session_state[key] = default
+    if "chat_history" not in st.session_state:
+        st.session_state["chat_history"] = []
 
 def display_header():
     st.set_page_config(page_title="OP", page_icon="🤖", initial_sidebar_state="collapsed")
@@ -449,7 +456,7 @@ def main():
     
 
     display_sidebar()
-    # display_chat_history()
+    display_chat_history()
     user_input()
     # display_chat_history_sidebar()
     
