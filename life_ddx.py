@@ -87,7 +87,7 @@ def display_chat_history_sidebar():
                 
                 with col3:
                     if st.button("🗑️", key=f"delete_{date}_{timestamp}"):
-                        delete_message(date, timestamp)
+                        delete_message(timestamp)
                         st.rerun()
 
 # Load environment variables
