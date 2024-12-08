@@ -80,7 +80,7 @@ def display_chat_history_sidebar():
                     if role == "User":
                         st.image(user_avatar_url, width=20)
                     else:
-                        st.image(specialist_id_caption[role]["avatar"], width=20)
+                        st.image(specialist_id_caption[st.session_state.specialist]["avatar"], width=20)
                 
                 with col2:
                     st.write(f"{content}")
